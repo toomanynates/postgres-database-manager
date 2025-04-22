@@ -6,7 +6,7 @@ import {
   activityLogs, type ActivityLog, type InsertActivityLog,
   appSettings, type AppSetting, type InsertAppSetting
 } from "@shared/schema";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { Logger } from "./utils/migrations";
 
@@ -381,7 +381,15 @@ export class DatabaseStorage implements IStorage {
       
       // We're using the environment database directly
       // In a production application, we would use the connection info to create a new connection
-      const result = await db.execute(sql.raw(query, params));
+      let result;
+      
+      if (params && params.length > 0) {
+        // For parameterized queries, use the pool directly
+        result = await pool.query(query, params);
+      } else {
+        // For non-parameterized queries, use Drizzle
+        result = await db.execute(sql.raw(query));
+      }
       
       // Log the activity
       await this.createActivityLog({
@@ -395,14 +403,18 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Query execution failed:', error);
       
-      // Log the error
-      await this.createActivityLog({
-        connectionId,
-        operation: query.trim().split(/\s+/)[0].toUpperCase(),
-        details: query,
-        status: 'ERROR',
-        metadata: { error: (error as Error).message }
-      });
+      try {
+        // Log the error
+        await this.createActivityLog({
+          connectionId,
+          operation: query.trim().split(/\s+/)[0].toUpperCase(),
+          details: query,
+          status: 'ERROR',
+          metadata: { error: (error as Error).message }
+        });
+      } catch (logError) {
+        console.error('Failed to log error:', logError);
+      }
       
       throw error;
     }

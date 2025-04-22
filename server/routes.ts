@@ -187,10 +187,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Tables routes
-  app.get('/api/connections/:connectionId/tables', async (req, res) => {
+  // Tables routes - metadata stored in our database
+  app.get('/api/connections/:connectionId/stored-tables', async (req, res) => {
     const connectionId = parseInt(req.params.connectionId);
-    console.log(`Getting tables for connection id: ${connectionId}`);
+    console.log(`Getting stored tables for connection id: ${connectionId}`);
     
     try {
       const tables = await storage.getTables(connectionId);

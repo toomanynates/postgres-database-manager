@@ -373,8 +373,14 @@ export class DatabaseStorage implements IStorage {
     console.log(`Params: ${JSON.stringify(params)}`);
     
     try {
-      // For this implementation we are using the same database connection for simplicity
-      // In a real application, we would need to use the connectionId to connect to the right database
+      // Get the connection from our database
+      const connection = await this.getConnection(connectionId);
+      if (!connection) {
+        throw new Error(`Connection with id ${connectionId} not found`);
+      }
+      
+      // We're using the environment database directly
+      // In a production application, we would use the connection info to create a new connection
       const result = await db.execute(sql.raw(query, params));
       
       // Log the activity

@@ -25,20 +25,14 @@ const Header: React.FC<HeaderProps> = ({ isSetupComplete, isConnected }) => {
             {/* Navigation Links - Only visible if setup is complete */}
             {isSetupComplete && (
               <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link href="/">
-                  <a className={`${location === '/' ? 'border-primary text-neutral-700' : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
-                    Dashboard
-                  </a>
+                <Link href="/" className={`${location === '/' ? 'border-primary text-neutral-700' : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+                  Dashboard
                 </Link>
-                <Link href="/table-manager">
-                  <a className={`${location === '/table-manager' ? 'border-primary text-neutral-700' : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
-                    Table Manager
-                  </a>
+                <Link href="/table-manager" className={`${location === '/table-manager' ? 'border-primary text-neutral-700' : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+                  Table Manager
                 </Link>
-                <Link href="/settings">
-                  <a className={`${location === '/settings' ? 'border-primary text-neutral-700' : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
-                    Settings
-                  </a>
+                <Link href="/settings" className={`${location === '/settings' ? 'border-primary text-neutral-700' : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+                  Settings
                 </Link>
               </nav>
             )}

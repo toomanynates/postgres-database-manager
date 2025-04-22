@@ -86,7 +86,8 @@ const TableManager: React.FC<TableManagerProps> = ({ connectionId }) => {
 
   // Handle column filter change
   const handleColumnFilterChange = (value: string) => {
-    setSelectedColumnFilter(value);
+    // If 'all_columns' is selected, set to null to indicate all columns
+    setSelectedColumnFilter(value === 'all_columns' ? null : value);
   };
 
   // Handle add row button click
@@ -264,14 +265,14 @@ const TableManager: React.FC<TableManagerProps> = ({ connectionId }) => {
             <span className="text-sm text-neutral-700">Column:</span>
             <Select 
               disabled={!selectedTable || isLoadingColumns}
-              value={selectedColumnFilter || ''}
+              value={selectedColumnFilter || 'all_columns'}
               onValueChange={handleColumnFilterChange}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="All columns" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All columns</SelectItem>
+                <SelectItem value="all_columns">All columns</SelectItem>
                 {columns && columns.map((column) => (
                   <SelectItem 
                     key={column.column_name} 

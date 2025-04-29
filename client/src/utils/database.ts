@@ -1,5 +1,5 @@
 import { apiRequest } from '@/lib/queryClient';
-import { DbConnectionForm, TableDataResponse } from '@/types/database';
+import { DbConnectionForm, TableDataResponse, DbConnection } from '@/types/database';
 
 export const testDatabaseConnection = async (connectionData: DbConnectionForm) => {
   console.log('Testing database connection:', connectionData);

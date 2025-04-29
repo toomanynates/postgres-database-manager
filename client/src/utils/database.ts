@@ -164,6 +164,23 @@ export const getActivityLogs = async (connectionId: number, limit: number = 10) 
   }
 };
 
+export const updateConnection = async (
+  connectionId: number, 
+  connectionData: Partial<DbConnectionForm>
+): Promise<DbConnection> => {
+  console.log(`Updating connection with id ${connectionId}:`, connectionData);
+  
+  try {
+    const response = await apiRequest('PUT', `/api/connections/${connectionId}`, connectionData);
+    const result = await response.json();
+    console.log('Connection updated:', result);
+    return result;
+  } catch (error) {
+    console.error('Failed to update connection:', error);
+    throw error;
+  }
+};
+
 export const formatTimestamp = (timestamp: string): string => {
   const date = new Date(timestamp);
   return new Intl.DateTimeFormat('en-US', {

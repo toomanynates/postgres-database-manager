@@ -10,7 +10,8 @@ import {
   insertRow,
   updateRow,
   deleteRow,
-  getActivityLogs
+  getActivityLogs,
+  updateConnection
 } from '@/utils/database';
 import { DbConnectionForm, TableDataResponse } from '@/types/database';
 
@@ -74,12 +75,12 @@ export const useSetupWizard = () => {
   });
   
   // Check setup status
-  const { data: setupStatus, isLoading: isCheckingSetup } = useQuery({
+  const { data: setupStatus, isLoading: isCheckingSetup } = useQuery<{ isComplete: boolean }>({
     queryKey: ['/api/setup/status'],
   });
   
   return {
-    isSetupComplete: setupStatus?.isComplete || false,
+    isSetupComplete: setupStatus?.isComplete ?? false,
     isCheckingSetup,
     testConnection: testConnectionMutation.mutate,
     saveConnection: saveConnectionMutation.mutate,
@@ -272,6 +273,86 @@ export const useTableManager = (connectionId: number | undefined, tableName: str
     isUpdatingRow: updateRowMutation.isPending,
     isDeletingRow: deleteRowMutation.isPending,
     refetchTableData,
+  };
+};
+
+export const useSettings = (connectionId: number | undefined) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Get active connection
+  const {
+    data: activeConnection,
+    isLoading: isLoadingConnection,
+    error: connectionError,
+  } = useQuery({
+    queryKey: ['/api/connections/active'],
+    enabled: !!connectionId,
+  });
+  
+  // Update connection mutation
+  const updateConnectionMutation = useMutation({
+    mutationFn: (connectionData: Partial<DbConnectionForm>) => {
+      if (!connectionId) {
+        throw new Error('Connection ID is required');
+      }
+      return updateConnection(connectionId, connectionData);
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Connection updated',
+        description: 'The database connection has been updated successfully',
+        variant: 'default',
+      });
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/connections/active'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to update connection',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  // Test the updated connection settings
+  const testUpdatedConnectionMutation = useMutation({
+    mutationFn: (connectionData: DbConnectionForm) => testDatabaseConnection(connectionData),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: 'Connection successful',
+          description: 'Successfully connected to the database with the updated settings',
+          variant: 'default',
+        });
+      } else {
+        toast({
+          title: 'Connection failed',
+          description: data.message || 'Failed to connect to the database with the updated settings',
+          variant: 'destructive',
+        });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Connection test failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  return {
+    activeConnection,
+    isLoadingConnection,
+    connectionError,
+    updateConnection: updateConnectionMutation.mutate,
+    isUpdatingConnection: updateConnectionMutation.isPending,
+    testUpdatedConnection: testUpdatedConnectionMutation.mutate,
+    isTestingConnection: testUpdatedConnectionMutation.isPending,
+    testConnectionResult: testUpdatedConnectionMutation.data,
   };
 };
 

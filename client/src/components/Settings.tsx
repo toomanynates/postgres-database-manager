@@ -11,10 +11,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from '@/components/ui/card';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { DbConnection, AppSettings } from '@/types/database';
+import { DbConnection, AppSettings, DbConnectionForm } from '@/types/database';
 import { useDatabaseContext } from '@/context/DatabaseContext';
+import { useSettings } from '@/hooks/useDatabase';
 
 interface SettingsProps {
   activeConnection: DbConnection | null;
@@ -23,11 +31,47 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings>({
     autoRefresh: true,
     saveHistory: true,
     rowsPerPage: 25
   });
+  
+  // Initialize the form data with the active connection details
+  const [connectionForm, setConnectionForm] = useState<DbConnectionForm>({
+    name: '',
+    host: '',
+    port: '',
+    database: '',
+    username: '',
+    password: '',
+    secure: false
+  });
+
+  // Initialize useSettings hook with the active connection ID
+  const {
+    updateConnection,
+    isUpdatingConnection,
+    testUpdatedConnection,
+    isTestingConnection,
+    testConnectionResult
+  } = useSettings(activeConnection?.id);
+
+  // Update the form when the active connection changes
+  useEffect(() => {
+    if (activeConnection) {
+      setConnectionForm({
+        name: activeConnection.name,
+        host: activeConnection.host,
+        port: activeConnection.port,
+        database: activeConnection.database,
+        username: activeConnection.username,
+        password: activeConnection.password,
+        secure: activeConnection.secure
+      });
+    }
+  }, [activeConnection]);
 
   // Handle settings change
   const handleAutoRefreshChange = (checked: boolean) => {
@@ -40,6 +84,15 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
 
   const handleRowsPerPageChange = (value: string) => {
     setSettings(prev => ({ ...prev, rowsPerPage: parseInt(value) }));
+  };
+
+  // Handle form field changes
+  const handleConnectionFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setConnectionForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   // Handle save settings
@@ -68,13 +121,23 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
     }
   };
 
-  // Handle edit connection
+  // Handle edit connection dialog open
   const handleEditConnection = () => {
-    console.log('Edit connection');
-    toast({
-      title: 'Edit connection',
-      description: 'This feature is not implemented in the current version',
-    });
+    console.log('Opening edit connection dialog');
+    setIsEditDialogOpen(true);
+  };
+
+  // Handle testing the connection
+  const handleTestConnection = () => {
+    console.log('Testing connection with:', connectionForm);
+    testUpdatedConnection(connectionForm);
+  };
+
+  // Handle saving the connection changes
+  const handleSaveConnection = () => {
+    console.log('Saving connection changes:', connectionForm);
+    updateConnection(connectionForm);
+    setIsEditDialogOpen(false);
   };
 
   return (
@@ -201,6 +264,142 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Connection Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md md:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Database Connection</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Connection Name
+              </Label>
+              <Input
+                id="name"
+                name="name"
+                value={connectionForm.name}
+                onChange={handleConnectionFormChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="host" className="text-right">
+                Host
+              </Label>
+              <Input
+                id="host"
+                name="host"
+                value={connectionForm.host}
+                onChange={handleConnectionFormChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="port" className="text-right">
+                Port
+              </Label>
+              <Input
+                id="port"
+                name="port"
+                value={connectionForm.port}
+                onChange={handleConnectionFormChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="database" className="text-right">
+                Database
+              </Label>
+              <Input
+                id="database"
+                name="database"
+                value={connectionForm.database}
+                onChange={handleConnectionFormChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                Username
+              </Label>
+              <Input
+                id="username"
+                name="username"
+                value={connectionForm.username}
+                onChange={handleConnectionFormChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="password" className="text-right">
+                Password
+              </Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={connectionForm.password}
+                onChange={handleConnectionFormChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="secure" className="text-right">
+                Secure Connection
+              </Label>
+              <div className="col-span-3 flex items-center">
+                <Checkbox
+                  id="secure"
+                  name="secure"
+                  checked={connectionForm.secure}
+                  onCheckedChange={(checked) => {
+                    setConnectionForm(prev => ({ ...prev, secure: checked === true }));
+                  }}
+                />
+                <Label htmlFor="secure" className="ml-2">
+                  Use SSL/TLS
+                </Label>
+              </div>
+            </div>
+            
+            {testConnectionResult && (
+              <div className={`p-3 rounded-md ${testConnectionResult.success ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+                {testConnectionResult.success ? 'Connection successful!' : `Connection failed: ${testConnectionResult.message}`}
+              </div>
+            )}
+          </div>
+          <DialogFooter className="sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleTestConnection}
+              disabled={isTestingConnection}
+            >
+              {isTestingConnection ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Test Connection
+            </Button>
+            <div className="flex space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="button" 
+                onClick={handleSaveConnection}
+                disabled={isUpdatingConnection}
+              >
+                {isUpdatingConnection ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Save Changes
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

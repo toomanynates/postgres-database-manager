@@ -267,13 +267,16 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
 
       {/* Edit Connection Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-md md:max-w-lg">
+        <DialogContent className="sm:max-w-md md:max-w-lg max-h-[85vh] h-auto overflow-y-auto my-4">
           <DialogHeader>
             <DialogTitle>Edit Database Connection</DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Make changes to your database connection settings below.
+            </p>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+              <Label htmlFor="name" className="sm:text-right">
                 Connection Name
               </Label>
               <Input
@@ -281,11 +284,11 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
                 name="name"
                 value={connectionForm.name}
                 onChange={handleConnectionFormChange}
-                className="col-span-3"
+                className="col-span-1 sm:col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="host" className="text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+              <Label htmlFor="host" className="sm:text-right">
                 Host
               </Label>
               <Input
@@ -293,11 +296,11 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
                 name="host"
                 value={connectionForm.host}
                 onChange={handleConnectionFormChange}
-                className="col-span-3"
+                className="col-span-1 sm:col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="port" className="text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+              <Label htmlFor="port" className="sm:text-right">
                 Port
               </Label>
               <Input
@@ -305,11 +308,11 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
                 name="port"
                 value={connectionForm.port}
                 onChange={handleConnectionFormChange}
-                className="col-span-3"
+                className="col-span-1 sm:col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="database" className="text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+              <Label htmlFor="database" className="sm:text-right">
                 Database
               </Label>
               <Input
@@ -317,11 +320,11 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
                 name="database"
                 value={connectionForm.database}
                 onChange={handleConnectionFormChange}
-                className="col-span-3"
+                className="col-span-1 sm:col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+              <Label htmlFor="username" className="sm:text-right">
                 Username
               </Label>
               <Input
@@ -329,11 +332,11 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
                 name="username"
                 value={connectionForm.username}
                 onChange={handleConnectionFormChange}
-                className="col-span-3"
+                className="col-span-1 sm:col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="password" className="text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+              <Label htmlFor="password" className="sm:text-right">
                 Password
               </Label>
               <Input
@@ -342,14 +345,14 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
                 type="password"
                 value={connectionForm.password}
                 onChange={handleConnectionFormChange}
-                className="col-span-3"
+                className="col-span-1 sm:col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="secure" className="text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+              <Label htmlFor="secure" className="sm:text-right">
                 Secure Connection
               </Label>
-              <div className="col-span-3 flex items-center">
+              <div className="col-span-1 sm:col-span-3 flex items-center">
                 <Checkbox
                   id="secure"
                   name="secure"
@@ -370,21 +373,23 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
               </div>
             )}
           </div>
-          <DialogFooter className="sm:justify-between">
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between">
             <Button
               type="button"
               variant="outline"
               onClick={handleTestConnection}
               disabled={isTestingConnection}
+              className="w-full sm:w-auto"
             >
               {isTestingConnection ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Test Connection
             </Button>
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsEditDialogOpen(false)}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -392,6 +397,7 @@ const Settings: React.FC<SettingsProps> = ({ activeConnection }) => {
                 type="button" 
                 onClick={handleSaveConnection}
                 disabled={isUpdatingConnection}
+                className="w-full sm:w-auto"
               >
                 {isUpdatingConnection ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Save Changes

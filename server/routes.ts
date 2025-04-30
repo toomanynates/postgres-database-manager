@@ -30,8 +30,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const connectionData = req.body;
-      const connectionString = generateConnectionString(connectionData);
-      const isConnected = await testConnection(connectionString);
+      console.log('Connection data:', {
+        host: connectionData.host,
+        port: connectionData.port,
+        database: connectionData.database,
+        username: connectionData.username,
+        // Password omitted for security
+      });
+      
+      // Check if this is a local connection
+      const isLocalConnection = connectionData.host === 'localhost' || 
+                             connectionData.host === '127.0.0.1';
+                         
+      let isConnected = false;
+      
+      if (isLocalConnection) {
+        try {
+          // For local connections, use the pg package directly
+          const { Pool } = require('pg');
+          const connectionConfig = {
+            host: connectionData.host,
+            port: connectionData.port,
+            database: connectionData.database,
+            user: connectionData.username,
+            password: connectionData.password,
+            ssl: connectionData.secure ? { rejectUnauthorized: false } : false
+          };
+          
+          console.log('Using direct PostgreSQL connection for localhost');
+          const testPool = new Pool(connectionConfig);
+          const client = await testPool.connect();
+          console.log('Local connection successful');
+          client.release();
+          await testPool.end();
+          isConnected = true;
+        } catch (localError) {
+          console.error('Local connection test failed:', localError);
+          isConnected = false;
+        }
+      } else {
+        // For remote connections, use the existing function
+        const connectionString = generateConnectionString(connectionData);
+        isConnected = await testConnection(connectionString);
+      }
       
       console.log(`Connection test result: ${isConnected ? 'Success' : 'Failed'}`);
       

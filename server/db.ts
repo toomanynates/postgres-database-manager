@@ -49,9 +49,23 @@ export const db = dbInstance;
 // Function to test database connection
 export const testConnection = async (connectionString: string): Promise<boolean> => {
   console.log("Testing database connection...");
-  const testPool = new Pool({ connectionString });
+  
+  // Check if this is a localhost connection
+  const isLocalConnection = connectionString.includes('localhost') || 
+                           connectionString.includes('127.0.0.1');
+  
+  let testPool;
   
   try {
+    if (isLocalConnection) {
+      // For local connections, use standard pg Pool without WebSockets
+      const { Pool: PgPool } = require('pg');
+      testPool = new PgPool({ connectionString });
+    } else {
+      // For remote connections, use the serverless Pool with WebSockets
+      testPool = new Pool({ connectionString });
+    }
+    
     const client = await testPool.connect();
     console.log("Test connection successful");
     client.release();
@@ -59,7 +73,13 @@ export const testConnection = async (connectionString: string): Promise<boolean>
     return true;
   } catch (error) {
     console.error("Test connection failed:", error);
-    await testPool.end();
+    if (testPool) {
+      try {
+        await testPool.end();
+      } catch (endError) {
+        console.error("Error closing test pool:", endError);
+      }
+    }
     return false;
   }
 };

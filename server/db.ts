@@ -3,8 +3,8 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 import { loadDatabaseConfig } from './config';
-import { createClient } from '@neondatabase/serverless';
 import { Logger } from './utils/migrations';
+import pg from 'pg';
 
 neonConfig.webSocketConstructor = ws;
 
@@ -59,8 +59,8 @@ export const testConnection = async (connectionString: string): Promise<boolean>
   try {
     if (isLocalConnection) {
       // For local connections, use standard pg Pool without WebSockets
-      const { Pool: PgPool } = require('pg');
-      testPool = new PgPool({ connectionString });
+      const localPool = new pg.Pool({ connectionString });
+      testPool = localPool;
     } else {
       // For remote connections, use the serverless Pool with WebSockets
       testPool = new Pool({ connectionString });
